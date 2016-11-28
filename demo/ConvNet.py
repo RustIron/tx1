@@ -25,6 +25,7 @@ import caffe, os, sys, cv2
 import argparse
 import pdb
 
+
 CLASSES = ('__background__',
            'aeroplane', 'bicycle', 'bird', 'boat',
            'bottle', 'bus', 'car', 'cat', 'chair',
@@ -44,9 +45,18 @@ def vis_detections(im, class_name, dets, thresh=0.5):
     if len(inds) == 0:
         return
    # pdb.set_trace()
-    im = im[:, :, (2, 1, 0)]
-#    plt.imshow(im)
+   # im = im[:, :, (2, 1, 0)]
+    for i in inds:
+        bbox = dets[i, :4]
+        score = dets[i, -1]
+        cv2.rectangle(im,(bbox[0,bbox[1]]),(bbox[2],bbox[3]),(0,255,0),3)
+    
+    return im
 
+
+
+#    plt.imshow(im)
+'''
     fig, ax = plt.subplots(figsize=(12, 12))
     ax.imshow(im, aspect='equal')
     for i in inds:
@@ -71,13 +81,13 @@ def vis_detections(im, class_name, dets, thresh=0.5):
     plt.axis('off')
     plt.tight_layout()
     plt.draw()
-
-def demo(net, image_name):
+'''
+def detect(net, im):
     """Detect object classes in an image using pre-computed object proposals."""
-
+    ########!!!!!!!!!!!!   cancel iamge load, use image pass in
     # Load the demo image
-    im_file = os.path.join(cfg.DATA_DIR, 'demo', image_name)
-    im = cv2.imread(im_file)
+    #im_file = os.path.join(cfg.DATA_DIR, 'demo', image_name)
+    #im = cv2.imread(im_file)
 
     # Detect all object classes and regress object bounds
     timer = Timer()
@@ -103,7 +113,8 @@ def demo(net, image_name):
     keep = nms(dets, NMS_THRESH)
     dets = dets[keep, :]
 	#print dets
-    vis_detections(im, cls, dets, thresh=CONF_THRESH)
+    return cls,dets
+    #vis_detections(im, cls, dets, thresh=CONF_THRESH)
 
 def parse_args():
     """Parse input arguments."""
@@ -119,27 +130,30 @@ def parse_args():
     args = parser.parse_args()
 
     return args
-
-if __name__ == '__main__':
+def setupNet():
+#if __name__ == '__main__':
     cfg.TEST.HAS_RPN = True  # Use RPN for proposals
 
-    args = parse_args()
+    #args = parse_args()
 
-    prototxt = os.path.join(cfg.MODELS_DIR, NETS[args.demo_net][0],
+    demo_net = ('ZF','ZF_faster_rcnn_final.caffemodel')
+    gpu_id   = 0
+    cpu_mode = 0
+    prototxt = os.path.join(cfg.MODELS_DIR, NETS[demo_net][0],
                             'faster_rcnn_alt_opt', 'faster_rcnn_test.pt')
     caffemodel = os.path.join(cfg.DATA_DIR, 'faster_rcnn_models',
-                              NETS[args.demo_net][1])
+                              NETS[demo_net][1])
 
     if not os.path.isfile(caffemodel):
         raise IOError(('{:s} not found.\nDid you run ./data/script/'
                        'fetch_faster_rcnn_models.sh?').format(caffemodel))
 
-    if args.cpu_mode:
+    if cpu_mode:
         caffe.set_mode_cpu()
     else:
         caffe.set_mode_gpu()
-        caffe.set_device(args.gpu_id)
-        cfg.GPU_ID = args.gpu_id
+        caffe.set_device(gpu_id)
+        cfg.GPU_ID = gpu_id
     net = caffe.Net(prototxt, caffemodel, caffe.TEST)
 
     print '\n\nLoaded network {:s}'.format(caffemodel)
@@ -149,6 +163,9 @@ if __name__ == '__main__':
     for i in xrange(2):
         _, _= im_detect(net, im)
 
+    print 'Network is loaded'
+    return net
+'''
     im_names = ['000456.jpg', '000542.jpg', '001150.jpg',
                 '001763.jpg', '004545.jpg']
     im_people_names = ['000456.jpg']
@@ -157,4 +174,6 @@ if __name__ == '__main__':
         print 'Demo for data/demo/{}'.format(im_name)
         demo(net, im_name)
 
+    
     plt.show()
+'''
