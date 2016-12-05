@@ -15,7 +15,7 @@ See README.md for installation instructions before running.
 
 import _init_paths
 from fast_rcnn.config import cfg
-from fast_rcnn.test import im_detect
+from test import im_detect
 from fast_rcnn.nms_wrapper import nms
 from utils.timer import Timer
 import matplotlib.pyplot as plt
@@ -39,24 +39,17 @@ NETS = {'vgg16': ('VGG16',
                   'ZF_faster_rcnn_final.caffemodel')}
 
 
-def vis_detections(im, class_name, dets, thresh=0.5):
+def vis_detections(im,cls,dets, thresh=0.5):
     """Draw detected bounding boxes."""
     inds = np.where(dets[:, -1] >= thresh)[0]
     if len(inds) == 0:
         return
    # pdb.set_trace()
-   # im = im[:, :, (2, 1, 0)]
-    for i in inds:
-        bbox = dets[i, :4]
-        score = dets[i, -1]
-        cv2.rectangle(im,(bbox[0,bbox[1]]),(bbox[2],bbox[3]),(0,255,0),3)
+    im = im[:, :, (2, 1, 0)]
+
     
-    return im
+    plt.imshow(im)
 
-
-
-#    plt.imshow(im)
-'''
     fig, ax = plt.subplots(figsize=(12, 12))
     ax.imshow(im, aspect='equal')
     for i in inds:
@@ -80,8 +73,8 @@ def vis_detections(im, class_name, dets, thresh=0.5):
                   fontsize=14)
     plt.axis('off')
     plt.tight_layout()
-    plt.draw()
-'''
+    plt.pause(0.05)
+
 def detect(net, im):
     """Detect object classes in an image using pre-computed object proposals."""
     ########!!!!!!!!!!!!   cancel iamge load, use image pass in
@@ -136,7 +129,7 @@ def setupNet():
 
     #args = parse_args()
 
-    demo_net = ('ZF','ZF_faster_rcnn_final.caffemodel')
+    demo_net = 'zf'
     gpu_id   = 0
     cpu_mode = 0
     prototxt = os.path.join(cfg.MODELS_DIR, NETS[demo_net][0],
